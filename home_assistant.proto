@@ -1,0 +1,32 @@
+syntax = "proto3";
+
+message SensorData {
+    string luminosity = 1;
+    string temperature = 2;
+    bool is_locked = 3;
+}
+
+message ActuatorCommand {
+    bool lock = 1;
+    int32 novo_nivel_luminosidade = 2;
+    int32 temperature = 3; 
+    string equipment = 4;
+}
+
+import "google/protobuf/empty.proto";
+
+service TemperatureActuatorService {
+    rpc alterarTemperatura(ActuatorCommand) returns (google.protobuf.Empty);
+}
+
+service LuminosityActuatorService {
+    rpc alterarLuminosidade(ActuatorCommand) returns (google.protobuf.Empty);
+}
+
+service LockActuatorService {
+    rpc alterarFechadura(ActuatorCommand) returns (google.protobuf.Empty);
+}
+service HomeAssistantService {
+    rpc GetSensorData(google.protobuf.Empty) returns (SensorData);
+    rpc ControlActuators(ActuatorCommand) returns (google.protobuf.Empty);
+}
