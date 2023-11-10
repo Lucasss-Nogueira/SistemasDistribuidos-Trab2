@@ -1,4 +1,5 @@
 import socket
+import google.protobuf.empty_pb2
 import grpc
 import threading
 import home_assistant_pb2
@@ -9,15 +10,15 @@ from concurrent import futures
 # Conectar aos atuadores via gRPC:
 
 ##Locker
-channel_locker = grpc.insecure_channel('localhost:50053')
+channel_locker = grpc.insecure_channel('localhost:51053')
 stub_locker = home_assistant_pb2_grpc.LockActuatorServiceStub(channel_locker)
 
 ##Luminosidade
-channel_luminosity = grpc.insecure_channel('localhost:50054')
+channel_luminosity = grpc.insecure_channel('localhost:52054')
 stub_luminosity = home_assistant_pb2_grpc.LuminosityActuatorServiceStub(channel_luminosity)
 
 ##Temperatura
-channel_temperature = grpc.insecure_channel('localhost:50055')
+channel_temperature = grpc.insecure_channel('localhost:15000')
 stub_temperature = home_assistant_pb2_grpc.TemperatureActuatorServiceStub(channel_temperature)
 
 
@@ -25,7 +26,7 @@ stub_temperature = home_assistant_pb2_grpc.TemperatureActuatorServiceStub(channe
 sensor_data = {
     'luminosity': 0,
     'temperature': 0,
-    'lock_status': 'Destrancada'
+    'lock_status': 'false'
 }
 
 # Função para alterar o estado do sensor de temperatura
@@ -36,20 +37,23 @@ def alterar_temperatura(nova_temperatura):
     command = home_assistant_pb2.ActuatorCommand(temperature = nova_temperatura, equipment="temperature")
     stub_temperature.alterarTemperatura(command)
 
+
 # Função para alterar o estado do sensor de fechadura
 def alterar_fechadura(novo_estado):
     
     command = home_assistant_pb2.ActuatorCommand(lock = novo_estado, equipment="lock")
     stub_locker.alterarFechadura(command)
 
+
 def alterar_luminosidade(nova_luminosidade):
 
-    command = home_assistant_pb2.ActuatorCommand(lock = nova_luminosidade, equipment="luminosity")
-    stub_luminosity.alterarFechadura(command)
+    command = home_assistant_pb2.ActuatorCommand(novo_nivel_luminosidade = nova_luminosidade, equipment="luminosity")
+    stub_luminosity.alterarLuminosidade(command)
+
 
 def kafka_consumer():
     conf = {
-        'bootstrap.servers': 'localhost:9092',
+        'bootstrap.servers': 'localhost:9094',
         'group.id': 'home-assistant-group',
         'auto.offset.reset': 'earliest'
     }
@@ -73,10 +77,13 @@ def kafka_consumer():
         message = msg.value().decode('utf-8')
         if 'Luminosidade' in message:
             sensor_data['luminosity'] = int(message.split(': ')[1].split(' ')[0])
+            print(f"Luminosidade atual: {sensor_data['luminosity']}")
         elif 'Temperatura' in message:
             sensor_data['temperature'] = int(message.split(': ')[1].split('°C')[0])
+            print(f"Temperatura atual: {sensor_data['temperature']}")
         elif 'Fechadura' in message:
             sensor_data['lock_status'] = message.split(': ')[1]
+            print(f"Estado da fechadura: {sensor_data['lock_status']}")
 
 kafka_consumer_thread = threading.Thread(target=kafka_consumer)
 kafka_consumer_thread.start()
@@ -86,27 +93,30 @@ class HomeAssistantService(home_assistant_pb2_grpc.HomeAssistantServiceServicer)
         return home_assistant_pb2.SensorData(
             luminosity=f"Luminosidade: {sensor_data['luminosity']} lux",
             temperature=f"Temperatura: {sensor_data['temperature']}°C",
-            is_locked=True if sensor_data['lock_status'] == 'Trancada' else False
+            is_locked=True if sensor_data['lock_status'] == 'True' else False
         )
 
     def ControlActuators(self, request, context):
         global sensor_data
-
+        print(f"Requisição \n{request}")
         if (request.equipment == 'temperature'):
             alterar_temperatura(request.temperature)
+            print(f"Valor da temperatura para ser alterado {request.temperature}")
         elif (request.equipment =='lock'):
             alterar_fechadura(request.lock)
         elif (request.equipment == 'luminosity'):
-            alterar_luminosidade(request.luminosity)
+            alterar_luminosidade(request.novo_nivel_luminosidade)
 
-        return home_assistant_pb2.Empty(message="Comando executado com sucesso.")
+        msg = "Comando realizado com sucesso!!\n\n"
+        print(msg)
+        return google.protobuf.empty_pb2.Empty()
 
 
 server = grpc.server(thread_pool=futures.ThreadPoolExecutor(max_workers=10))
 home_assistant_pb2_grpc.add_HomeAssistantServiceServicer_to_server(HomeAssistantService(), server)
 server.add_insecure_port('[::]:50051')
 server.start()
-
+server.wait_for_termination()
 
 
 ## Parte TCP (Não sendo utilzada)

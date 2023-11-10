@@ -13,6 +13,10 @@ message ActuatorCommand {
     string equipment = 4;
 }
 
+// message Response {
+//     string response = 1;
+// }
+
 import "google/protobuf/empty.proto";
 
 service TemperatureActuatorService {
