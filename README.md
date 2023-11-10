@@ -62,12 +62,12 @@ Serviço gRPC para o Home Assistant
 
 ### Frameworks e Ferramentas Utilizadas:
 #### gRPC
-+ Uso no projeto: Foi adotado para a comunicação entre o Home Assistant com os atuadores e também do client com o Home Assistant, seguindo o paradigma Cliente/Servidor.
++ Uso no projeto: comunicação entre o Home Assistant com os atuadores e também do client com o Home Assistant, seguindo o paradigma Cliente/Servidor.
 #### Confluent Kafka:
-+ Uso no projeto: Foi adotado para a comunicação assíncrona entre os sensores e o Home Assistant, permitindo o envio e recebimento de dados em tempo real através de tópicos específicos.
++ Uso no projeto: comunicação assíncrona entre os sensores e o Home Assistant, permitindo o envio e recebimento de dados em tempo real através de tópicos específicos.
 
 #### Docker:
-+ Uso no projeto: Foi utilizado para criar contêineres isolados para o serviço Kafka, simplificando a configuração e garantindo uma execução consistente.
++ Uso no projeto: criar contêineres isolados para o serviço Kafka, simplificando a configuração e garantindo uma execução consistente.
 
 ### Como executar a aplicação:
  #### 1. Configuração do Ambiente Kafka
