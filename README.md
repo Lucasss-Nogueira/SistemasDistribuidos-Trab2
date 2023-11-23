@@ -18,7 +18,7 @@ O Home Assistant atua como consumidor para receber e armazenar os estados dos se
 
 #### 3. Comunicação Home Assistant e atuadores
 
-Para que o Home Assistant possa alterar os estados dos sensores a partir da requisição vinda do cliente, ele se comunica com os atuadores a partir do grpc, de forma que o Home Assiant atua como cliente e os atuadores atuam como servidores.
+Para que o Home Assistant possa alterar os estados dos sensores a partir da requisição vinda do cliente, ele se comunica com os atuadores a partir do grpc, de forma que o Home Assistant atua como cliente e os atuadores atuam como servidores.
 
 - Considerando o exemplo de o cliente requisitar a alteração de temperatura, ele envia uma solicitação ao Home Assistant através do método ControlActuators() e internamente, o Home Assistant chama a função alterar_temperatura(nova_temperatura), que utiliza o serviço gRPC para se comunicar com o atuador de temperatura (TemperatureActuatorService).
 
