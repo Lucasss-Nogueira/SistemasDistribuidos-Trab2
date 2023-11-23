@@ -129,7 +129,7 @@ Serviço gRPC para o Home Assistant
   -e KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=0@kafka-server:9093 \
   -e KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER \
   bitnami/kafka:latest
-
+  docker run --network app-tier -p 8080:8080 -e KAFKA_BROKERS=kafka-server:9092 docker.redpanda.com/redpandadata/console:latest
   ```
 
 #### 2. Execução dos Sensores e Atuadores:
